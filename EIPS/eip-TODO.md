@@ -1,3 +1,16 @@
+---
+eip: <to be assigned>
+title: Ditto Transactions
+author: Michael Brooks m@ib.tc
+discussions-to: <URL>
+status: Draft
+type: <Standards Track | Meta | Informational>
+category (*only required for Standard Track): <Core | Networking | Interface | ERC>
+created: <date created on, in ISO 8601 (yyyy-mm-dd) format>
+requires (*optional): <EIP number(s)>
+replaces (*optional): <EIP number(s)>
+---
+
 ## Simple Summary
 A ditto transaction allows for a user to duplicate any previously confirmed transaction.  A transaction has multiple fields that maybe useful to re-use, which includes script code that makes up the smart contracts. A ditto, or copy of an existing transaction is the smallest form of a signed signature that can be used to convey value across the Ethereum network. A smaller transaction size reduces gas prices and frees up more confirmation bandwidth.
 
@@ -8,27 +21,21 @@ If some previous transaction shares simulators with a transaction a user is abou
 Users are motivated to use ditto transactions as they pay a lower gas fee.  With the advent of DeFi smart contracts, some payments can be repetitive - such a periodic loan re-payment or payment of a regular salary.  Periodic transactions will gain the most from lower gas fees with ditto transactions over other transaction types. Additionally, if another user executed a very large contract - this script could be copied for a fraction of the cost because scripts can be re-run without being forced to re-define them.
 
 ## Specification
-Existing ethereum transactions conform to the following schema:
+Assuming EIP 2718, we can create a new typed transaction envelope based off of the original, shown below:
+rlp([0, rlp([nonce, gasPrice, gasLimit, to, value, data, v, r, s])])
 
-[nonce, gasprice, startgas, to, value, data, v, r, s]
+A ditto transaction represents all of the same values shown above, however it allows for the reuse of previous transaction's information which is referenced by a "ditto_id".  A "ditto_id" needs only to refer to a unique transaction that has occurred, and it must be a small as possible.  The ditto_id could be implemented as the absolute transaction number starting from the 0th transaction on the genesis block.
 
-A ditto transaction is similar, Using a null byte, we will signify that this RPL structure is empty and to use the values found in the referenced transaction, as shown below:
+With parameter overriding, order matters because it allows a transaction to avoid a filler-byte.  With parameters overriding, the smallest possible translation only needs three parameters.  Below is a small ditto transaction that will inherit all other parameters from the original request:
 
-RPL
+rlp([d, rlp([ditto_id, nonce, s]))
 
-[ditto_id, nonce, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0X00, s]
+The above transaction exactly replays a previous request that this user has made. The public key information used to sign the transaction 's' can be obtained from the previous transaction referenced by the ditto id.  This is for example a regular repayment which is supported by a minified request. In a ditto transaction, any given parameter could be overridden, the full schema is shown below:
 
-The ditto_id needs only to refer to a unique transaction that has occurred, and it must be a small as possible.  The ditto_id could be the transaction number, or the absolute value starting from the 0th transaction on the genesis block. Using a single integer to represent the ditto_id will result in smaller transaction sizes.
+rlp([d, rlp([ditto_id, nonce, s, to, v, r, value, gasPrice, gasLimit, data]))
 
-Using this ditto transaction type, a user can replay an existing script with an new source account and destination by overriding specific fields:
-
-[ditto_id, nonce, 0x00, 0x00, to, 0x00, 0x00, v, r, s]
-
-To reduce the transaction size even further we can remove some elements if the transaction being duplicated it's owner.  This would happen for a weeky salary, or monthly payment or any other periodic payment. In this case, the smallest possible transaction would be just three elements; 'ditto_id',  'nonce', and the 's' signature value.  The rest can be taken from the referenced transaction:
-
-[ditto_id, nonce, s]
-
-The value 'v' is needed to recover the public key, which can obtained from the previous transaction referenced by the ditto id.
+Using this ditto transaction type, a user can replay an existing script with an new source account and destination:
+rlp([d, rlp([ditto_id, nonce, s, to, v, r]))
 
 ## Rationale
 We need to do whatever we can to reduce transaction sizes.  Adopting compression techniques of using existing transaction as a kind of code book that can be re-used by future transactions will reduce the repetitive nature of blockchain transactions.  Key material and binding smart contract data can be referenced with a kind of pointer, or "ditto id" that frees up blockchain bandwidth to encode unique data instead of repetition.
