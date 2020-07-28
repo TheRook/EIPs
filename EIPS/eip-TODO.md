@@ -9,20 +9,24 @@ Users are motivated to use ditto transactions as they pay a lower gas fee.  With
 
 ## Specification
 Existing ethereum transactions conform to the following schema:
+
 [nonce, gasprice, startgas, to, value, data, v, r, s]
 
 A ditto transaction is similar, Using a null byte, we will signify that this RPL structure is empty and to use the values found in the referenced transaction, as shown below:
 
 RPL
-[ditto_id, nonce, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, r, s]
+
+[ditto_id, nonce, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0X00, s]
 
 The ditto_id needs only to refer to a unique transaction that has occurred, and it must be a small as possible.  The ditto_id could be the transaction number, or the absolute value starting from the 0th transaction on the genesis block. Using a single integer to represent the ditto_id will result in smaller transaction sizes.
 
 Using this ditto transaction type, a user can replay an existing script with an new source account and destination by overriding specific fields:
+
 [ditto_id, nonce, 0x00, 0x00, to, 0x00, 0x00, v, r, s]
 
-To reduce the transaction size even further we can remove some elements if the transaction being duplicated is owned by the user.  This transaction type would be any source that has a periodic payment. In this case, the smallest possible transaction would be just four elements; nonce, and 'r' and 's' signature values.  The 'v' key lookup parameter can be taken from the  referenced transaction:
-[ditto_id, nonce, r, s]
+To reduce the transaction size even further we can remove some elements if the transaction being duplicated is owned by the user.  This transaction type would be any source that has a periodic payment. In this case, the smallest possible transaction would be just four elements; nonce, and the 's' signature value.  The 'v' and 'r' key parameters can be taken from the  referenced transaction:
+
+[ditto_id, nonce, s]
 
 The value 'v' is needed to recover the public key, which can obtained from the previous transaction referenced by the ditto id.
 
