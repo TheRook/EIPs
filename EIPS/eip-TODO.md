@@ -1,7 +1,7 @@
 ---
 eip: <to be assigned>
 title: Ditto Transactions
-author: Michael Brooks m@ib.tc
+author: Michael Brooks <m@ib.tc>
 discussions-to: <URL>
 status: Draft
 type: <Standards Track | Meta | Informational>
