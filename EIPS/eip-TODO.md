@@ -24,7 +24,7 @@ Using this ditto transaction type, a user can replay an existing script with an 
 
 [ditto_id, nonce, 0x00, 0x00, to, 0x00, 0x00, v, r, s]
 
-To reduce the transaction size even further we can remove some elements if the transaction being duplicated is owned by the user.  This transaction type would be any source that has a periodic payment. In this case, the smallest possible transaction would be just four elements; nonce, and the 's' signature value.  The 'v' and 'r' key parameters can be taken from the  referenced transaction:
+To reduce the transaction size even further we can remove some elements if the transaction being duplicated it's owner.  This would happen for a weeky salary, or monthly payment or any other periodic payment. In this case, the smallest possible transaction would be just three elements; 'ditto_id',  'nonce', and the 's' signature value.  The rest can be taken from the referenced transaction:
 
 [ditto_id, nonce, s]
 
